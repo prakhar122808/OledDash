@@ -25,13 +25,13 @@ OledDash is an ESP32-based modular dashboard system utilizing an SH1106 OLED dis
 ## Future Roadmap (Expanding the Dash)
 OledDash is engineered to be more than just a desk clock. Upcoming modules slated for future implementation include:
 
-*   [ ] **Weather Widget:** Integration with OpenWeatherMap API to display real-time local weather.
-*   [ ] **System Monitor:** A PC hardware tracking client via MQTT or Serial (CPU/GPU temps and RAM usage).
-*   [ ] **IoT Smart Toggle:** Remote control relays or Home Assistant integrations directly from the screen.
+*   **Weather Widget:** Integration with OpenWeatherMap API to display real-time local weather.
+*   **System Monitor:** A PC hardware tracking client via MQTT or Serial (CPU/GPU temps and RAM usage).
+*   **IoT Smart Toggle:** Remote control relays or Home Assistant integrations directly from the screen.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 Ensure you have the following libraries installed in your Arduino IDE or PlatformIO project:
