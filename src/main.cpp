@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
+#include <HTTPClient.h>
 #include <time.h>
 #include <U8g2lib.h>
 #include <WiFi.h>
@@ -12,7 +14,7 @@ U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 const char *ntpServer = "in.pool.ntp.org";
-const long gmtOffset = 19800; // +5:30
+const long gmtOffset = 19800; // +5:30(IST)
 const long daylightOffset = 0;
 
 // Button pin definitions
@@ -23,11 +25,21 @@ const long daylightOffset = 0;
 
 // Menu options and positions
 int positions[] = {16, 32, 48, 64};
-const char *pageOneOptions[] = {"Date and Time", "Option 2", "Option 3", "Option 4"};
+const char *pageOneOptions[] = {"Date and Time", "Weather", "Option 3", "Option 4"};
 
 // Variables to track current selection and page
 int currentSelection = 0;
 int pageSelection = 1;
+
+// Variables related to weather API
+struct Temperatures
+{
+    float actualTemp;
+    float feelsLikeTemp;
+};
+Temperatures cachedTemps = {-1, -1};
+unsigned long lastFetchTime = 0;
+const unsigned long fetchInterval = 60000; // 1 minute
 
 // Function declarations
 void displayStartingMenu();
@@ -35,9 +47,9 @@ void displayStartingMenuOptionOne(char date[], char time[]);
 void displayStartingMenuOptionTwo();
 void displayStartingMenuOptionThree();
 void displayStartingMenuOptionFour();
-void enableNavigation();
-
 void display(int pageSelection, char date[], char time[]);
+void enableNavigation();
+Temperatures getTemps();
 
 void setup()
 {
@@ -102,6 +114,7 @@ void loop()
     display(pageSelection, date, time);
     delay(10);
 }
+
 void displayStartingMenu()
 {
     u8g2.clearBuffer();
@@ -128,7 +141,7 @@ void displayStartingMenu()
         }
         case 1:
         {
-            displayStartingMenuOptionTwo();
+            pageSelection = 3;
             break;
         }
         case 2:
@@ -171,8 +184,33 @@ void displayStartingMenuOptionTwo()
 {
 
     u8g2.clearBuffer();
+    Temperatures temperatures = getTemps();
+    // Actual temperature
+    const char *actualTempText = "Temperature: ";
+    int actualTempPos = u8g2.getStrWidth(actualTempText);
+
+    u8g2.setCursor(0, positions[0]);
+    u8g2.print(actualTempText);
+    u8g2.setCursor(actualTempPos, positions[0]);
+    u8g2.print(temperatures.actualTemp);
+
+    // Feels like temperature
+    const char *feelsLikeTempText = "Feels like: ";
+    int feelsLikeTempPos = u8g2.getStrWidth(feelsLikeTempText);
+
     u8g2.setCursor(0, positions[1]);
-    u8g2.print(2);
+    u8g2.print(feelsLikeTempText);
+    u8g2.setCursor(feelsLikeTempPos, positions[1]);
+    u8g2.print(temperatures.feelsLikeTemp);
+
+    u8g2.setCursor(0, positions[2]);
+    u8g2.print("Press Select to go back");
+    if (!digitalRead(selectButton))
+    {
+        pageSelection = 1;
+    }
+    while (!digitalRead(selectButton))
+        ;
     u8g2.sendBuffer();
 }
 
@@ -204,6 +242,9 @@ void display(int pageSelection, char date[], char time[])
     case 2:
         displayStartingMenuOptionOne(date, time);
         break;
+    case 3:
+        displayStartingMenuOptionTwo();
+        break;
     }
 }
 
@@ -224,4 +265,54 @@ void enableNavigation()
         while (!digitalRead(downButton))
             ;
     }
+}
+
+Temperatures getTemps()
+{
+    // Verify WiFi connection
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        Serial.println("WiFi not connected, skipping fetch.");
+        return cachedTemps; // or temps = {-1,-1} if no cache yet
+    }
+
+    // Check time since laast update
+    if (millis() - lastFetchTime < fetchInterval && lastFetchTime != 0)
+    {
+        return cachedTemps;
+    }
+
+    Temperatures temps = {-1, -1};
+
+    HTTPClient http;
+    String url = "https://api.openweathermap.org/data/2.5/weather?lat=" + String(lat, 7) + "&lon=" + String(lon, 7) + "&appid=" + API_KEY + "&units=metric";
+
+    http.begin(url);
+    int httpCode = http.GET();
+    if (httpCode == 200)
+    {
+        String payload = http.getString();
+
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, payload);
+
+        if (error)
+        {
+            Serial.print("Failed to parse JSON data.");
+            Serial.println(error.c_str());
+            http.end();
+            return temps;
+        }
+        temps.actualTemp = doc["main"]["temp"];
+        temps.feelsLikeTemp = doc["main"]["feels_like"];
+    }
+    else
+    {
+        Serial.printf("Request failed, code: %d\n", httpCode);
+    }
+    http.end();
+
+    cachedTemps = temps;
+    lastFetchTime = millis();
+    return cachedTemps;
 }
