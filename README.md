@@ -9,6 +9,7 @@ OledDash is an ESP32-based modular dashboard system utilizing an SH1106 OLED dis
 *   **Tactile Navigation:** Uses a simple 3-button configuration (Up, Down, Select) with software-based debouncing locks.
 *   **Dynamic UI Framework:** Built using the `U8g2` graphics library for crisp rendering on an SH1106 screen.
 *   **State-Driven UI:** Seamlessly switches pages using clean state structures, keeping the display fast and responsive.
+*   **Live Weather Integration:** Connects to the OpenWeatherMap API to display metrics for Actual Temperature and Feels Like Temperature, utilizing a built-in 1-minute caching interval to optimize API requests and preserve bandwidth.
 
 ---
 
@@ -35,10 +36,27 @@ OledDash is engineered to be more than just a desk clock. Upcoming modules slate
 
 ### Prerequisites
 Ensure you have the following libraries installed in your Arduino IDE or PlatformIO project:
-*   `WiFi` (Built-in)
+*   `ArduinoJson` by Benoit Blanchon
+*   `HttpClient` (Built-in)
 *   `U8g2` by oliver
+*   `WiFi` (Built-in)
 
-### Installation
+### Installation and Configuration
 1. Clone the repository:
    ```bash
    git clone https://github.com/prakhar122808/OledDash.git
+2. Create a file named `credentials.h` in the same directory as your main sketch file.
+
+3. Populate credentials.h with your configurations following this template:
+
+```C++
+#pragma once
+
+// Wi-Fi Credentials
+#define WIFI_SSID "Your_WiFi_Name"
+#define WIFI_PASSWORD "Your_WiFi_Password"
+
+// OpenWeatherMap API Configuration
+#define API_KEY "Your_OpenWeatherMap_API_Key"
+#define lat Your_Location_Latitude
+#define lon Your_Location_Longitude
