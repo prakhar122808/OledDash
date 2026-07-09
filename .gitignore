@@ -74,6 +74,7 @@ Testing/
 lib/
 sdkconfig.esp32dev
 test/
+.DS_Store
 
 # credentials
 include/credentials.h
