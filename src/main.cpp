@@ -20,7 +20,7 @@ const long daylightOffset = 0;
 
 // Button pin definitions
 #define upButton 16
-#define downButton 17
+// #define downButton 17
 #define selectButton 18
 
 // ----------------------Menu options and positions----------------------
@@ -43,17 +43,27 @@ unsigned long lastFetchTime = 0;
 const unsigned long fetchInterval = 60000; // 1 minute
 
 // -------------------------Function declarations-------------------------
-void customDelay(unsigned long ms);
+// Displays
 void displayStartingMenu();
 void displayTime(char date[], char time[]);
 void displayWeather();
 void display(int displayPage, char date[], char time[]);
+// Custom delays
+void selectDelay();
+void upDelay();
+// Helper functions
 Temperatures getTemps();
 
 // ---------------------------NonBlockingDelays---------------------------
-NonBlockingDelay selectDebounce(100);
+// Select button
+NonBlockingDelay selectDebounce(250);
 bool lastSelectState = HIGH;
 bool isSelectDebouncing = false;
+// Up button
+NonBlockingDelay upDebounce(500);
+bool lastUpState = HIGH;
+bool isUpDebouncing = false;
+
 void setup()
 {
 
@@ -73,7 +83,7 @@ void setup()
     u8g2.begin();
 
     pinMode(upButton, INPUT_PULLUP);
-    pinMode(downButton, INPUT_PULLUP);
+    // pinMode(downButton, INPUT_PULLUP);
     pinMode(selectButton, INPUT_PULLUP);
 }
 
@@ -99,22 +109,13 @@ void loop()
     delay(100);
 }
 
-void customDelay(unsigned long ms)
-{
-    if (isSelectDebouncing && selectDebounce.isElapsed())
-    {
-        isSelectDebouncing = false;
-    }
-}
-
 void displayStartingMenu()
 {
     u8g2.clearBuffer();
 
-    if (!digitalRead(upButton))
+    if (!digitalRead(upButton) && !isUpDebouncing)
     {
         selection = (selection + 1) % 2;
-        customDelay(30);
     }
     // 2x2 grid placement positions
     int colX[2] = {20, 84};
@@ -160,7 +161,7 @@ void displayStartingMenu()
         u8g2.drawStr(textX, y + 8, appNames[i]);
     }
 
-    if (!digitalRead(selectButton))
+    if (!digitalRead(selectButton) && !isSelectDebouncing)
     {
         switch (selection)
         {
@@ -181,8 +182,9 @@ void displayStartingMenu()
             break;
         }
         }
-        customDelay(30);
     }
+    upDelay();
+    selectDelay();
     u8g2.sendBuffer();
 }
 
@@ -199,11 +201,11 @@ void displayTime(char dateStr[], char timeStr[])
     u8g2.print(timeStr);
     u8g2.setCursor(0, positions[2]);
     u8g2.print("Select to go back");
-    if (!digitalRead(selectButton))
+    if (!digitalRead(selectButton) && !isSelectDebouncing)
     {
         displayPage = 1;
     }
-    customDelay(30);
+    selectDelay();
     u8g2.sendBuffer();
 }
 
@@ -216,7 +218,7 @@ void displayWeather()
     u8g2.setFont(u8g2_font_t0_11b_tf);
     Temperatures temperatures = getTemps();
 
-    // Actual temperature
+    // -------------------------Actual temperature-------------------------
     const char *actualTempText = "Temperature: ";
     int actualTempPos = u8g2.getStrWidth(actualTempText);
     char actualTempbuffer[7];
@@ -226,13 +228,13 @@ void displayWeather()
     u8g2.setCursor(0, positions[0]);
     u8g2.print(actualTempText);
     u8g2.setCursor(actualTempPos, positions[0]);
-    u8g2.print(temperatures.actualTemp);
+    u8g2.print(actualTempbuffer);
 
     // Unit symbol
     u8g2.drawCircle(actualunitSymbolPos, positions[0] - 7, 1);
     u8g2.drawStr(actualunitSymbolPos + 3, positions[0], "C");
 
-    // Feels like temperature
+    // ------------------------Feels like temperature------------------------
     const char *feelsLikeTempText = "Feels like: ";
     int feelsLikeTempPos = u8g2.getStrWidth(feelsLikeTempText);
     char feelsLikeTempbuffer[7];
@@ -242,7 +244,7 @@ void displayWeather()
     u8g2.setCursor(0, positions[1]);
     u8g2.print(feelsLikeTempText);
     u8g2.setCursor(feelsLikeTempPos, positions[1]);
-    u8g2.print(temperatures.feelsLikeTemp);
+    u8g2.print(feelsLikeTempbuffer);
 
     // Unit symbol
     u8g2.drawCircle(feelsLikeUnitSymbolPos, positions[1] - 7, 1);
@@ -250,11 +252,11 @@ void displayWeather()
 
     u8g2.setCursor(0, positions[2]);
     u8g2.print("Select to go back");
-    if (!digitalRead(selectButton))
+    if (!digitalRead(selectButton) && !isSelectDebouncing)
     {
         displayPage = 1;
     }
-    customDelay(30);
+    selectDelay();
     u8g2.sendBuffer();
 }
 
@@ -272,6 +274,40 @@ void display(int displayPage, char dateStr[], char timeStr[])
         displayWeather();
         break;
     }
+}
+
+void selectDelay()
+{
+    bool currentSelectState = digitalRead(selectButton);
+
+    if (isSelectDebouncing && selectDebounce.isElapsed())
+    {
+        isSelectDebouncing = false;
+    }
+
+    if (currentSelectState == LOW && lastSelectState == HIGH && !isSelectDebouncing)
+    {
+        selectDebounce.start();
+        isSelectDebouncing = true;
+    }
+    lastSelectState = currentSelectState;
+}
+
+void upDelay()
+{
+    bool currentUpState = digitalRead(upButton);
+
+    if (isUpDebouncing && upDebounce.isElapsed())
+    {
+        isUpDebouncing = false;
+    }
+
+    if (currentUpState == LOW && lastUpState == HIGH && !isUpDebouncing)
+    {
+        upDebounce.start();
+        isUpDebouncing = true;
+    }
+    lastUpState = currentUpState;
 }
 
 Temperatures getTemps()
