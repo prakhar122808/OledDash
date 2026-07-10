@@ -28,7 +28,7 @@ const char *mainMenu[] = {"Date and Time", "Weather"};
 const int numFeatures = sizeof(mainMenu) / sizeof(mainMenu[0]);
 
 // Variables to track current selection and page
-int currentPage = 0;
+int selection = 0;
 int displayPage = 1;
 
 // Variables related to weather API
@@ -46,8 +46,6 @@ void displayStartingMenu();
 void displayTime(char date[], char time[]);
 void displayWeather();
 void display(int displayPage, char date[], char time[]);
-void enableNavigation();
-void menuDateTimePage();
 Temperatures getTemps();
 
 void setup()
@@ -67,7 +65,6 @@ void setup()
     configTime(gmtOffset, daylightOffset, ntpServer);
 
     u8g2.begin();
-    u8g2.setFont(u8g2_font_ncenB08_tr);
 
     pinMode(upButton, INPUT_PULLUP);
     pinMode(downButton, INPUT_PULLUP);
@@ -102,21 +99,59 @@ void loop()
 void displayStartingMenu()
 {
     u8g2.clearBuffer();
-    enableNavigation();
-    for (int pos = 0; pos < numFeatures; pos++)
+
+    if (!digitalRead(upButton))
     {
-        if (currentPage == pos)
+        selection = (selection + 1) % 2;
+        delay(30);
+    }
+    // 2x2 grid placement positions
+    int colX[2] = {20, 84};
+    int rowY[2] = {25, 55};
+
+    // Application labels
+    const char *appNames[] = {"Clock", "Weather"};
+
+    const int numApps = sizeof(appNames) / sizeof(appNames[0]);
+    for (int i = 0; i < numApps; i++)
+    {
+        int col = i % 2;
+        int row = i / 2;
+        int x = colX[col];
+        int y = rowY[row];
+
+        // Draw frame around selected app
+        if (i == selection)
         {
-            u8g2.setCursor(0, positions[pos]);
-            u8g2.print('>');
+            u8g2.drawRFrame(x - 14, y - 20, 52, 30, 4);
         }
-        u8g2.setCursor(10, positions[pos]);
-        u8g2.print(mainMenu[pos]);
+
+        // --- Icons ---
+        const int appClock = 69;
+        const int weatherSunBehindClouds = 65;
+        if (i == 0)
+        {
+            u8g2.setFont(u8g2_font_open_iconic_app_2x_t);
+            u8g2.drawGlyph(x + 4, y - 4, appClock);
+        }
+        else if (i == 1)
+        {
+            u8g2.setFont(u8g2_font_open_iconic_weather_2x_t);
+            u8g2.drawGlyph(x + 4, y - 4, weatherSunBehindClouds);
+        }
+
+        // ---Text styling---
+        u8g2.setFont(u8g2_font_profont12_tf);
+
+        int textWidth = u8g2.getStrWidth(appNames[i]);
+        int textX = x + 12 - (textWidth / 2);
+
+        u8g2.drawStr(textX, y + 8, appNames[i]);
     }
 
     if (!digitalRead(selectButton))
     {
-        switch (currentPage)
+        switch (selection)
         {
         case 0:
         {
@@ -136,6 +171,8 @@ void displayStartingMenu()
 
 void displayTime(char dateStr[], char timeStr[])
 {
+    // Plan to add option to use external hardware to get time
+    // and defaulting to NTP when external hardware isn't present
 
     u8g2.clearBuffer();
     u8g2.setCursor(0, positions[0]);
@@ -143,7 +180,7 @@ void displayTime(char dateStr[], char timeStr[])
     u8g2.setCursor(0, positions[1]);
     u8g2.print(timeStr);
     u8g2.setCursor(0, positions[2]);
-    u8g2.print("Press Select to go back");
+    u8g2.print("Select to go back");
     if (!digitalRead(selectButton))
     {
         displayPage = 1;
@@ -154,29 +191,46 @@ void displayTime(char dateStr[], char timeStr[])
 
 void displayWeather()
 {
+    // Plan to add option to use external hardware to get humidity and tempertaure
+    // and defaulting to external API when external hardware isn't present
 
     u8g2.clearBuffer();
     Temperatures temperatures = getTemps();
+
     // Actual temperature
     const char *actualTempText = "Temperature: ";
     int actualTempPos = u8g2.getStrWidth(actualTempText);
+    char actualTempbuffer[7];
+    snprintf(actualTempbuffer, sizeof(actualTempbuffer), "%.2f", temperatures.actualTemp);
+    int actualunitSymbolPos = actualTempPos + u8g2.getStrWidth(actualTempbuffer) + 2;
 
     u8g2.setCursor(0, positions[0]);
     u8g2.print(actualTempText);
     u8g2.setCursor(actualTempPos, positions[0]);
     u8g2.print(temperatures.actualTemp);
 
+    // Unit symbol
+    u8g2.drawCircle(actualunitSymbolPos, positions[0] - 7, 1);
+    u8g2.drawStr(actualunitSymbolPos + 3, positions[0], "C");
+
     // Feels like temperature
     const char *feelsLikeTempText = "Feels like: ";
     int feelsLikeTempPos = u8g2.getStrWidth(feelsLikeTempText);
+    char feelsLikeTempbuffer[7];
+    snprintf(feelsLikeTempbuffer, sizeof(feelsLikeTempbuffer), "%.2f", temperatures.feelsLikeTemp);
+    int feelsLikeUnitSymbolPos = feelsLikeTempPos + u8g2.getStrWidth(feelsLikeTempbuffer) + 2;
 
     u8g2.setCursor(0, positions[1]);
     u8g2.print(feelsLikeTempText);
     u8g2.setCursor(feelsLikeTempPos, positions[1]);
     u8g2.print(temperatures.feelsLikeTemp);
 
+    // Unit symbol
+    u8g2.drawCircle(feelsLikeUnitSymbolPos, positions[1] - 7, 1);
+    u8g2.drawStr(feelsLikeUnitSymbolPos + 3, positions[1], "C");
+
     u8g2.setCursor(0, positions[2]);
-    u8g2.print("Press Select to go back");
+    u8g2.print("Select to go back");
     if (!digitalRead(selectButton))
     {
         displayPage = 1;
@@ -198,23 +252,6 @@ void display(int displayPage, char dateStr[], char timeStr[])
     case 3:
         displayWeather();
         break;
-    }
-}
-
-void enableNavigation()
-{
-    if (!digitalRead(upButton))
-    {
-        currentPage--;
-        if (currentPage < 0)
-            currentPage += numFeatures;
-        delay(30);
-    }
-    if (!digitalRead(downButton))
-    {
-        currentPage++;
-        currentPage %= numFeatures;
-        delay(30);
     }
 }
 
