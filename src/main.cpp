@@ -21,15 +21,15 @@ const long daylightOffset = 0;
 #define upButton 16
 #define downButton 17
 #define selectButton 18
-#define numOptions 4
 
 // Menu options and positions
 int positions[] = {16, 32, 48, 64};
-const char *pageOneOptions[] = {"Date and Time", "Weather", "Option 3", "Option 4"};
+const char *mainMenu[] = {"Date and Time", "Weather"};
+const int numFeatures = sizeof(mainMenu) / sizeof(mainMenu[0]);
 
 // Variables to track current selection and page
-int currentSelection = 0;
-int pageSelection = 1;
+int currentPage = 0;
+int displayPage = 1;
 
 // Variables related to weather API
 struct Temperatures
@@ -43,12 +43,11 @@ const unsigned long fetchInterval = 60000; // 1 minute
 
 // Function declarations
 void displayStartingMenu();
-void displayStartingMenuOptionOne(char date[], char time[]);
-void displayStartingMenuOptionTwo();
-void displayStartingMenuOptionThree();
-void displayStartingMenuOptionFour();
-void display(int pageSelection, char date[], char time[]);
+void displayTime(char date[], char time[]);
+void displayWeather();
+void display(int displayPage, char date[], char time[]);
 void enableNavigation();
+void menuDateTimePage();
 Temperatures getTemps();
 
 void setup()
@@ -78,7 +77,7 @@ void setup()
 void loop()
 {
 
-    // Get the current time
+    // Get the current date and time
     struct tm timeInfo;
 
     if (!getLocalTime(&timeInfo))
@@ -88,99 +87,72 @@ void loop()
     }
 
     // Format the date and time into strings
-    char dateTimeStr[64];
-    strftime(dateTimeStr, sizeof(dateTimeStr), "%A, %B %d %Y %H:%M:%S", &timeInfo); // Time starts after 4 spaces from the date
-    char date[32] = {0};
-    char time[32] = {0};
+    char dateStr[32] = {0};
+    char timeStr[32] = {0};
+    strftime(dateStr, sizeof(dateStr), "%A, %B %d %Y", &timeInfo);
+    strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &timeInfo);
     int count = 0;
     int timeCount = 0;
     int gapsBetweenDateAndTime = 4;
-    for (int pos = 0; pos < sizeof(dateTimeStr); pos++)
-    {
-        if (dateTimeStr[pos] == ' ')
-        {
-            count++;
-        }
-        if (count < gapsBetweenDateAndTime)
-        {
-            date[pos] = dateTimeStr[pos];
-        }
-        else
-        {
-            time[timeCount++] = dateTimeStr[pos];
-        }
-    }
 
-    display(pageSelection, date, time);
-    delay(10);
+    display(displayPage, dateStr, timeStr);
+    delay(100);
 }
 
 void displayStartingMenu()
 {
     u8g2.clearBuffer();
     enableNavigation();
-    for (int pos = 0; pos < numOptions; pos++)
+    for (int pos = 0; pos < numFeatures; pos++)
     {
-        if (currentSelection == pos)
+        if (currentPage == pos)
         {
             u8g2.setCursor(0, positions[pos]);
             u8g2.print('>');
         }
         u8g2.setCursor(10, positions[pos]);
-        u8g2.print(pageOneOptions[pos]);
+        u8g2.print(mainMenu[pos]);
     }
 
     if (!digitalRead(selectButton))
     {
-        switch (currentSelection)
+        switch (currentPage)
         {
         case 0:
         {
-            pageSelection = 2;
+            displayPage = 2;
             break;
         }
         case 1:
         {
-            pageSelection = 3;
-            break;
-        }
-        case 2:
-        {
-            displayStartingMenuOptionThree();
-            break;
-        }
-        case 3:
-        {
-            displayStartingMenuOptionFour();
+            displayPage = 3;
             break;
         }
         }
-        while (!digitalRead(selectButton))
-            ;
+        delay(30);
     }
     u8g2.sendBuffer();
 }
 
-void displayStartingMenuOptionOne(char date[], char time[])
+void displayTime(char dateStr[], char timeStr[])
 {
 
     u8g2.clearBuffer();
     u8g2.setCursor(0, positions[0]);
-    u8g2.print(date);
+    u8g2.print(dateStr);
     u8g2.setCursor(0, positions[1]);
-    u8g2.print(time + 1);
+    u8g2.print(timeStr);
     u8g2.setCursor(0, positions[2]);
     u8g2.print("Press Select to go back");
     if (!digitalRead(selectButton))
     {
-        pageSelection = 1;
+        displayPage = 1;
     }
-    while (!digitalRead(selectButton))
-        ;
+    delay(30);
     u8g2.sendBuffer();
 }
 
-void displayStartingMenuOptionTwo()
+void displayWeather()
 {
 
     u8g2.clearBuffer();
@@ -207,43 +179,24 @@ void displayStartingMenuOptionTwo()
     u8g2.print("Press Select to go back");
     if (!digitalRead(selectButton))
     {
-        pageSelection = 1;
+        displayPage = 1;
     }
-    while (!digitalRead(selectButton))
-        ;
+    delay(30);
     u8g2.sendBuffer();
 }
 
-void displayStartingMenuOptionThree()
+void display(int displayPage, char dateStr[], char timeStr[])
 {
-
-    u8g2.clearBuffer();
-    u8g2.setCursor(0, positions[2]);
-    u8g2.print(3);
-    u8g2.sendBuffer();
-}
-
-void displayStartingMenuOptionFour()
-{
-
-    u8g2.clearBuffer();
-    u8g2.setCursor(0, positions[3]);
-    u8g2.print(4);
-    u8g2.sendBuffer();
-}
-
-void display(int pageSelection, char date[], char time[])
-{
-    switch (pageSelection)
+    switch (displayPage)
     {
     case 1:
         displayStartingMenu();
         break;
     case 2:
-        displayStartingMenuOptionOne(date, time);
+        displayTime(dateStr, timeStr);
         break;
     case 3:
-        displayStartingMenuOptionTwo();
+        displayWeather();
         break;
     }
 }
@@ -252,18 +205,16 @@ void enableNavigation()
 {
     if (!digitalRead(upButton))
     {
-        currentSelection--;
-        if (currentSelection < 0)
-            currentSelection += numOptions;
-        while (!digitalRead(upButton))
-            ;
+        currentPage--;
+        if (currentPage < 0)
+            currentPage += numFeatures;
+        delay(30);
     }
     if (!digitalRead(downButton))
     {
-        currentSelection++;
-        currentSelection %= numOptions;
-        while (!digitalRead(downButton))
-            ;
+        currentPage++;
+        currentPage %= numFeatures;
+        delay(30);
     }
 }
 
