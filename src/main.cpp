@@ -22,16 +22,16 @@ const long daylightOffset = 0;
 #define downButton 17
 #define selectButton 18
 
-// Menu options and positions
+// ----------------------Menu options and positions----------------------
 int positions[] = {16, 32, 48, 64};
 const char *mainMenu[] = {"Date and Time", "Weather"};
 const int numFeatures = sizeof(mainMenu) / sizeof(mainMenu[0]);
 
-// Variables to track current selection and page
+// ------------Variables to track current selection and page------------
 int selection = 0;
 int displayPage = 1;
 
-// Variables related to weather API
+// -------------------Variables related to weather API-------------------
 struct Temperatures
 {
     float actualTemp;
@@ -41,7 +41,7 @@ Temperatures cachedTemps = {-1, -1};
 unsigned long lastFetchTime = 0;
 const unsigned long fetchInterval = 60000; // 1 minute
 
-// Function declarations
+// -------------------------Function declarations-------------------------
 void displayStartingMenu();
 void displayTime(char date[], char time[]);
 void displayWeather();
@@ -141,7 +141,7 @@ void displayStartingMenu()
         }
 
         // ---Text styling---
-        u8g2.setFont(u8g2_font_profont12_tf);
+        u8g2.setFont(u8g2_font_6x10_tf);
 
         int textWidth = u8g2.getStrWidth(appNames[i]);
         int textX = x + 12 - (textWidth / 2);
@@ -156,11 +156,17 @@ void displayStartingMenu()
         case 0:
         {
             displayPage = 2;
+            u8g2.setFont(u8g2_font_5x7_t_cyrillic);
+            u8g2.setCursor(64, positions[3] - 2);
+            u8g2.print("Loading...");
             break;
         }
         case 1:
         {
             displayPage = 3;
+            u8g2.setFont(u8g2_font_5x7_t_cyrillic);
+            u8g2.setCursor(64, positions[3] - 2);
+            u8g2.print("Loading...");
             break;
         }
         }
@@ -175,6 +181,7 @@ void displayTime(char dateStr[], char timeStr[])
     // and defaulting to NTP when external hardware isn't present
 
     u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_t0_11b_tf);
     u8g2.setCursor(0, positions[0]);
     u8g2.print(dateStr);
     u8g2.setCursor(0, positions[1]);
@@ -195,6 +202,7 @@ void displayWeather()
     // and defaulting to external API when external hardware isn't present
 
     u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_t0_11b_tf);
     Temperatures temperatures = getTemps();
 
     // Actual temperature
@@ -261,7 +269,7 @@ Temperatures getTemps()
     if (WiFi.status() != WL_CONNECTED)
     {
         Serial.println("WiFi not connected, skipping fetch.");
-        return cachedTemps; // or temps = {-1,-1} if no cache yet
+        return cachedTemps;
     }
 
     // Check time since laast update
