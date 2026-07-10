@@ -6,6 +6,7 @@
 #include <WiFi.h>
 
 #include "credentials.h"
+#include "nonBlockingDelay.h"
 
 // U8g2 object for SH1106 128x64 OLED display using hardware I2C
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
@@ -42,12 +43,17 @@ unsigned long lastFetchTime = 0;
 const unsigned long fetchInterval = 60000; // 1 minute
 
 // -------------------------Function declarations-------------------------
+void customDelay(unsigned long ms);
 void displayStartingMenu();
 void displayTime(char date[], char time[]);
 void displayWeather();
 void display(int displayPage, char date[], char time[]);
 Temperatures getTemps();
 
+// ---------------------------NonBlockingDelays---------------------------
+NonBlockingDelay selectDebounce(100);
+bool lastSelectState = HIGH;
+bool isSelectDebouncing = false;
 void setup()
 {
 
@@ -88,12 +94,17 @@ void loop()
     char timeStr[32] = {0};
     strftime(dateStr, sizeof(dateStr), "%A, %B %d %Y", &timeInfo);
     strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &timeInfo);
-    int count = 0;
-    int timeCount = 0;
-    int gapsBetweenDateAndTime = 4;
 
     display(displayPage, dateStr, timeStr);
     delay(100);
+}
+
+void customDelay(unsigned long ms)
+{
+    if (isSelectDebouncing && selectDebounce.isElapsed())
+    {
+        isSelectDebouncing = false;
+    }
 }
 
 void displayStartingMenu()
@@ -103,7 +114,7 @@ void displayStartingMenu()
     if (!digitalRead(upButton))
     {
         selection = (selection + 1) % 2;
-        delay(30);
+        customDelay(30);
     }
     // 2x2 grid placement positions
     int colX[2] = {20, 84};
@@ -170,7 +181,7 @@ void displayStartingMenu()
             break;
         }
         }
-        delay(30);
+        customDelay(30);
     }
     u8g2.sendBuffer();
 }
@@ -192,7 +203,7 @@ void displayTime(char dateStr[], char timeStr[])
     {
         displayPage = 1;
     }
-    delay(30);
+    customDelay(30);
     u8g2.sendBuffer();
 }
 
@@ -243,7 +254,7 @@ void displayWeather()
     {
         displayPage = 1;
     }
-    delay(30);
+    customDelay(30);
     u8g2.sendBuffer();
 }
 
