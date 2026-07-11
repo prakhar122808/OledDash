@@ -1,6 +1,4 @@
-#ifndef NON_BLOCKING_DELAY_H
-#define NON_BLOCKING_DELAY_H
-
+#pragma once
 #include <Arduino.h>
 
 class NonBlockingDelay
@@ -58,5 +56,3 @@ public:
         return false;
     }
 };
-
-#endif
