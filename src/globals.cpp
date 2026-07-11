@@ -11,13 +11,14 @@ const long gmtOffset = 19800; // +5:30(IST)
 const long daylightOffset = 0;
 
 // ----------------------Menu options and positions----------------------
-int positions[] = {16, 32, 48, 64};
+int positions[] = {16, 32, 48, 63};
 const char *mainMenu[] = {"Date and Time", "Weather"};
 const int numFeatures = sizeof(mainMenu) / sizeof(mainMenu[0]);
 
 // ------------Variables to track current selection and page------------
 int selection = 0;
 int displayPage = 1;
+int selectedFeature = 0;
 
 // ---------------------Variables related to weather---------------------
 Temperatures cachedTemps = {-1, -1};

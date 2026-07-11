@@ -24,6 +24,7 @@ extern const int numFeatures;
 
 extern int selection;
 extern int displayPage;
+extern int selectedFeature;
 
 // ------------------Variables related to date and time------------------
 struct DateAndTime
