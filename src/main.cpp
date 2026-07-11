@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <cstring>
 #include <HTTPClient.h>
 #include <time.h>
 #include <U8g2lib.h>
@@ -32,12 +33,21 @@ const int numFeatures = sizeof(mainMenu) / sizeof(mainMenu[0]);
 int selection = 0;
 int displayPage = 1;
 
-// -------------------Variables related to weather API-------------------
+// ------------------Variables related to date and time------------------
+struct DateAndTime
+{
+    char day[4];   // eg. MON
+    char date[11]; // eg. 01/11/2025
+    char time[9];  // eg. 23:09:38
+};
+
+// ---------------------Variables related to weather---------------------
 struct Temperatures
 {
     float actualTemp;
     float feelsLikeTemp;
 };
+
 Temperatures cachedTemps = {-1, -1};
 unsigned long lastFetchTime = 0;
 const unsigned long fetchInterval = 60000; // 1 minute
@@ -45,14 +55,15 @@ const unsigned long fetchInterval = 60000; // 1 minute
 // -------------------------Function declarations-------------------------
 // Displays
 void displayStartingMenu();
-void displayTime(char date[], char time[]);
+void displayTime();
 void displayWeather();
-void display(int displayPage, char date[], char time[]);
+void display(int displayPage);
 // Custom delays
 void selectDelay();
 void upDelay();
 // Helper functions
 Temperatures getTemps();
+DateAndTime getDateAndTime();
 
 // ---------------------------NonBlockingDelays---------------------------
 // Select button
@@ -90,22 +101,7 @@ void setup()
 void loop()
 {
 
-    // Get the current date and time
-    struct tm timeInfo;
-
-    if (!getLocalTime(&timeInfo))
-    {
-        Serial.println("Failed to obtain time.");
-        return;
-    }
-
-    // Format the date and time into strings
-    char dateStr[32] = {0};
-    char timeStr[32] = {0};
-    strftime(dateStr, sizeof(dateStr), "%A, %B %d %Y", &timeInfo);
-    strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &timeInfo);
-
-    display(displayPage, dateStr, timeStr);
+    display(displayPage);
     delay(100);
 }
 
@@ -188,18 +184,26 @@ void displayStartingMenu()
     u8g2.sendBuffer();
 }
 
-void displayTime(char dateStr[], char timeStr[])
+void displayTime()
 {
     // Plan to add option to use external hardware to get time
     // and defaulting to NTP when external hardware isn't present
 
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_t0_11b_tf);
+    DateAndTime dateAndTime = getDateAndTime();
+
+    char *day = dateAndTime.day;
+    char *date = dateAndTime.date;
+    char *time = dateAndTime.time;
+
     u8g2.setCursor(0, positions[0]);
-    u8g2.print(dateStr);
+    u8g2.print(day);
     u8g2.setCursor(0, positions[1]);
-    u8g2.print(timeStr);
+    u8g2.print(date);
     u8g2.setCursor(0, positions[2]);
+    u8g2.print(time);
+    u8g2.setCursor(0, positions[3]);
     u8g2.print("Select to go back");
     if (!digitalRead(selectButton) && !isSelectDebouncing)
     {
@@ -260,7 +264,7 @@ void displayWeather()
     u8g2.sendBuffer();
 }
 
-void display(int displayPage, char dateStr[], char timeStr[])
+void display(int displayPage)
 {
     switch (displayPage)
     {
@@ -268,7 +272,7 @@ void display(int displayPage, char dateStr[], char timeStr[])
         displayStartingMenu();
         break;
     case 2:
-        displayTime(dateStr, timeStr);
+        displayTime();
         break;
     case 3:
         displayWeather();
@@ -358,4 +362,34 @@ Temperatures getTemps()
     cachedTemps = temps;
     lastFetchTime = millis();
     return cachedTemps;
+}
+
+DateAndTime getDateAndTime()
+{
+
+    // Get the current date and time
+    struct tm timeInfo;
+    DateAndTime dateAndTime = {"", "", ""};
+
+    if (!getLocalTime(&timeInfo))
+    {
+        Serial.println("Failed to obtain time.");
+        return dateAndTime;
+    }
+    // Initialise to zero
+    char day[4] = {0};
+    char date[11] = {0};
+    char time[9] = {0};
+
+    strftime(day, sizeof(day), "%A", &timeInfo);
+    // strftime(date, 2, "%b", &timeInfo);
+    // converToMonthNumber(date);
+    strftime(date, sizeof(date), "%d/%m/%Y", &timeInfo);
+    strftime(time, sizeof(time), "%H:%M:%S", &timeInfo);
+
+    // Return value
+    std::strcpy(dateAndTime.day, day);
+    std::strcpy(dateAndTime.date, date);
+    std::strcpy(dateAndTime.time, time);
+    return dateAndTime;
 }
