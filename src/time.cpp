@@ -34,6 +34,7 @@ DateAndTime getDateAndTime()
 
 void displayTime()
 {
+    selectedFeature = 0;
     // Plan to add option to use external hardware to get time
     // and defaulting to NTP when external hardware isn't present
 
