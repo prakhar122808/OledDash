@@ -32,12 +32,9 @@ DateAndTime getDateAndTime()
     return dateAndTime;
 }
 
-void displayTime()
+// ---------------------------------Page 1----------------------------------
+void currentTime()
 {
-    selectedFeature = 0;
-    // Plan to add option to use external hardware to get time
-    // and defaulting to NTP when external hardware isn't present
-
     u8g2.clearBuffer();
     DateAndTime dateAndTime = getDateAndTime();
 
@@ -60,15 +57,20 @@ void displayTime()
     int timeWidth = u8g2.getStrWidth(time);
     u8g2.setCursor((128 - timeWidth) / 2, 40);
     u8g2.print(time);
+}
 
-    // Divider line
-    u8g2.drawLine(0, positions[2], 127, positions[2]);
-
+void displayTime()
+{
+    selectedFeaturePage = 1;
+    totalFeaturePages = 1;
+    // Plan to add option to use external hardware to get time
+    // and defaulting to NTP when external hardware isn't present
+    currentTime();
     // Indicator showing selected page in app
     int x = 50;
-    for (int i = 0; i < 4; i++)
+    for (int i = 1; i <= 4; i++)
     {
-        if (i == selectedFeature)
+        if (i == selectedFeaturePage)
         {
             u8g2.drawDisc(x, 56, 2);
         }
@@ -78,10 +80,20 @@ void displayTime()
         }
         x += 9;
     }
+    if (!nextButton && !isNextDebouncing && selectedFeaturePage != totalFeaturePages)
+    {
+        selectedFeaturePage++;
+    }
+    if (!prevButton && !isPrevDebouncing && selectedFeaturePage != 1)
+    {
+        selectedFeaturePage--;
+    }
     if (!digitalRead(selectButton) && !isSelectDebouncing)
     {
         displayPage = 1;
     }
+    nextDelay();
+    prevDelay();
     selectDelay();
     u8g2.sendBuffer();
 }
