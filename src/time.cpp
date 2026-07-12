@@ -26,9 +26,9 @@ DateAndTime getDateAndTime()
     strftime(time, sizeof(time), "%H:%M:%S", &timeInfo);
 
     // Return value
-    std::strcpy(dateAndTime.day, day);
-    std::strcpy(dateAndTime.date, date);
-    std::strcpy(dateAndTime.time, time);
+    std::snprintf(dateAndTime.day, sizeof(dateAndTime.day), "%s", day);
+    std::snprintf(dateAndTime.date, sizeof(dateAndTime.date), "%s", date);
+    std::snprintf(dateAndTime.time, sizeof(dateAndTime.time), "%s", time);
     return dateAndTime;
 }
 
