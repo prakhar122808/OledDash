@@ -77,7 +77,7 @@ void displayWeather()
     u8g2.setCursor((128 - actualTempTextPos) / 2, 7);
     u8g2.print(actualTempText);
 
-    u8g2.setFont(u8g2_font_10x20_tf);
+    u8g2.setFont(u8g2_font_fub17_tf);
     char actualTemp[7];
     snprintf(actualTemp, sizeof(actualTemp), "%.2f", weather.actualTemp);
     int actualTempPos = u8g2.getStrWidth(actualTemp);
@@ -86,43 +86,28 @@ void displayWeather()
     u8g2.print(actualTemp);
 
     // Unit symbol
-    u8g2.drawCircle(actualUnitSymbolPos - 3, positions[0] + 3, 1);
+    u8g2.drawCircle(actualUnitSymbolPos - 3, positions[0] + 3, 2);
     u8g2.setCursor(actualUnitSymbolPos, positions[1]);
     u8g2.print("C");
 
     // ------------------------Feels like temperature------------------------
-    // const char *feelsLikeTempText = "Feels like: ";
-    // int feelsLikeTempPos = u8g2.getStrWidth(feelsLikeTempText);
-    // char feelsLikeTempbuffer[7];
-    // snprintf(feelsLikeTempbuffer, sizeof(feelsLikeTempbuffer), "%.2f", weather.feelsLikeTemp);
-    // int feelsLikeUnitSymbolPos = feelsLikeTempPos + u8g2.getStrWidth(feelsLikeTempbuffer) + 2;
+    u8g2.setFont(u8g2_font_6x10_tf);
+    const char *feelsLikeTempText = "Feels like: ";
+    int feelsLikeTempPos = u8g2.getStrWidth(feelsLikeTempText);
+    char feelsLikeTempbuffer[7];
+    snprintf(feelsLikeTempbuffer, sizeof(feelsLikeTempbuffer), "%.2f", weather.feelsLikeTemp);
+    int feelsLikeUnitSymbolPos = feelsLikeTempPos + u8g2.getStrWidth(feelsLikeTempbuffer) + 2;
+    u8g2.setCursor(0, positions[2]);
+    u8g2.print(feelsLikeTempText);
 
-    // u8g2.setCursor(0, positions[1]);
-    // u8g2.print(feelsLikeTempText);
-    // u8g2.setCursor(feelsLikeTempPos, positions[1]);
-    // u8g2.print(feelsLikeTempbuffer);
+    u8g2.setFont(u8g2_font_6x12_tf);
+    u8g2.setCursor(feelsLikeTempPos, positions[2]);
+    u8g2.print(feelsLikeTempbuffer);
 
-    // // Unit symbol
-    // u8g2.drawCircle(feelsLikeUnitSymbolPos, positions[1] - 7, 1);
-    // u8g2.drawStr(feelsLikeUnitSymbolPos + 3, positions[1], "C");
+    // Unit symbol
+    u8g2.drawCircle(feelsLikeUnitSymbolPos, positions[2] - 7, 1);
+    u8g2.drawStr(feelsLikeUnitSymbolPos + 3, positions[2], "C");
 
-    // // Divider line
-    // u8g2.drawLine(0, positions[2], 127, positions[2]);
-
-    // // Indicator showing selected page in app
-    // int x = 50;
-    // for (int i = 0; i < 4; i++)
-    // {
-    //     if (i == selectedFeature)
-    //     {
-    //         u8g2.drawDisc(x, 56, 2);
-    //     }
-    //     else
-    //     {
-    //         u8g2.drawCircle(x, 56, 2);
-    //     }
-    //     x += 9;
-    // }
     displayDown();
     displayUp();
     if (!digitalRead(selectButton) && !isSelectDebouncing)
