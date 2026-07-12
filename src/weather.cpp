@@ -86,8 +86,8 @@ void displayWeather()
     u8g2.print(actualTemp);
 
     // Unit symbol
-    u8g2.drawCircle(actualUnitSymbolPos - 3, positions[0] + 3, 2);
-    u8g2.setCursor(actualUnitSymbolPos, positions[1]);
+    u8g2.drawCircle(actualUnitSymbolPos - 2, positions[0] + 3, 2);
+    u8g2.setCursor(actualUnitSymbolPos + 1, positions[1]);
     u8g2.print("C");
 
     // ------------------------Feels like temperature------------------------
@@ -105,8 +105,8 @@ void displayWeather()
     u8g2.print(feelsLikeTempbuffer);
 
     // Unit symbol
-    u8g2.drawCircle(feelsLikeUnitSymbolPos, positions[2] - 7, 1);
-    u8g2.drawStr(feelsLikeUnitSymbolPos + 3, positions[2], "C");
+    u8g2.drawCircle(feelsLikeUnitSymbolPos + 1, positions[2] - 7, 1);
+    u8g2.drawStr(feelsLikeUnitSymbolPos + 4, positions[2], "C");
 
     displayDown();
     displayUp();
