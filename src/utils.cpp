@@ -17,19 +17,36 @@ void selectDelay()
     lastSelectState = currentSelectState;
 }
 
-void upDelay()
+void nextDelay()
 {
-    bool currentUpState = digitalRead(upButton);
+    bool currentNextState = digitalRead(nextButton);
 
-    if (isUpDebouncing && upDebounce.isElapsed())
+    if (isNextDebouncing && nextDebounce.isElapsed())
     {
-        isUpDebouncing = false;
+        isNextDebouncing = false;
     }
 
-    if (currentUpState == LOW && lastUpState == HIGH && !isUpDebouncing)
+    if (currentNextState == LOW && lastNextState == HIGH && !isNextDebouncing)
     {
-        upDebounce.start();
-        isUpDebouncing = true;
+        nextDebounce.start();
+        isNextDebouncing = true;
     }
-    lastUpState = currentUpState;
+    lastNextState = currentNextState;
+}
+
+void prevDelay()
+{
+    bool currentPrevState = digitalRead(prevButton);
+
+    if (isPrevDebouncing && prevDebounce.isElapsed())
+    {
+        isPrevDebouncing = false;
+    }
+
+    if (currentPrevState == LOW && lastPrevState == HIGH && !isPrevDebouncing)
+    {
+        prevDebounce.start();
+        isPrevDebouncing = true;
+    }
+    lastPrevState = currentPrevState;
 }
