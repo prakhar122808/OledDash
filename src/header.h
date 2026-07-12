@@ -6,8 +6,8 @@
 #include "nonBlockingDelay.h"
 
 // Button pin definitions
-#define upButton 16
-// #define downButton 17
+#define nextButton 16
+#define prevButton 17
 #define selectButton 18
 
 extern U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2;
@@ -24,7 +24,8 @@ extern const int numFeatures;
 
 extern int selection;
 extern int displayPage;
-extern int selectedFeature;
+extern int selectedFeaturePage;
+extern int totalFeaturePages;
 
 // ------------------Variables related to date and time------------------
 struct DateAndTime
@@ -51,21 +52,29 @@ extern const unsigned long fetchInterval;
 extern NonBlockingDelay selectDebounce;
 extern bool lastSelectState;
 extern bool isSelectDebouncing;
-extern NonBlockingDelay upDebounce;
-extern bool lastUpState;
-extern bool isUpDebouncing;
+extern NonBlockingDelay nextDebounce;
+extern bool lastNextState;
+extern bool isNextDebouncing;
+extern NonBlockingDelay prevDebounce;
+extern bool lastPrevState;
+extern bool isPrevDebouncing;
 
 // -------------------------Function declarations-------------------------
 // Displays
-void displayStartingMenu();
-void displayTime();
-void displayWeather();
 void display(int displayPage);
-void displayUp();
-void displayDown();
+void displayStartingMenu();
+
+// Display related to clock
+void displayTime();
+
+// Display related to weather
+void displayWeather();
+
 // Custom delays
 void selectDelay();
-void upDelay();
+void nextDelay();
+void prevDelay();
+
 // Helper functions
 Weather getWeather();
 DateAndTime getDateAndTime();
