@@ -35,13 +35,16 @@ struct DateAndTime
 };
 
 // ---------------------Variables related to weather---------------------
-struct Temperatures
+struct Weather
 {
     float actualTemp;
     float feelsLikeTemp;
+    float humidity;
+    char weather[17];    // eg. Scattered clouds
+    char weatherIcon[4]; // eg. 01d
 };
 
-extern Temperatures cachedTemps;
+extern Weather cachedWeather;
 extern unsigned long lastFetchTime;
 extern const unsigned long fetchInterval;
 
@@ -58,9 +61,11 @@ void displayStartingMenu();
 void displayTime();
 void displayWeather();
 void display(int displayPage);
+void displayUp();
+void displayDown();
 // Custom delays
 void selectDelay();
 void upDelay();
 // Helper functions
-Temperatures getTemps();
+Weather getWeather();
 DateAndTime getDateAndTime();

@@ -21,7 +21,7 @@ int displayPage = 1;
 int selectedFeature = 0;
 
 // ---------------------Variables related to weather---------------------
-Temperatures cachedTemps = {-1, -1};
+Weather cachedWeather = {-1, -1, -1, " ", " "};
 unsigned long lastFetchTime = 0;
 const unsigned long fetchInterval = 60000; // 1 minute
 
