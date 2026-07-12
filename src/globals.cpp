@@ -33,11 +33,11 @@ bool lastSelectState = HIGH;
 bool isSelectDebouncing = false;
 
 // Next button
-NonBlockingDelay nextDebounce(500);
+NonBlockingDelay nextDebounce(250);
 bool lastNextState = HIGH;
 bool isNextDebouncing = false;
 
 // Prev button
-NonBlockingDelay prevDebounce(500);
+NonBlockingDelay prevDebounce(250);
 bool lastPrevState = HIGH;
 bool isPrevDebouncing = false;
