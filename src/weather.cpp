@@ -61,12 +61,9 @@ Weather getWeather()
     return cachedWeather;
 }
 
-void displayWeather()
+// ---------------------------------Page 1----------------------------------
+void currentTemperatures()
 {
-    selectedFeature = 0;
-    // Plan to add option to use external hardware to get humidity and tempertaure
-    // and defaulting to external API when external hardware isn't present
-
     u8g2.clearBuffer();
     Weather weather = getWeather();
 
@@ -107,13 +104,44 @@ void displayWeather()
     // Unit symbol
     u8g2.drawCircle(feelsLikeUnitSymbolPos + 1, positions[2] - 7, 1);
     u8g2.drawStr(feelsLikeUnitSymbolPos + 4, positions[2], "C");
+}
 
-    displayDown();
-    displayUp();
+void displayWeather()
+{
+    selectedFeaturePage = 1;
+    totalFeaturePages = 1;
+    // Plan to add option to use external hardware to get humidity and tempertaure
+    // and defaulting to external API when external hardware isn't present
+    currentTemperatures();
+
+    // Indicator showing selected page in app
+    int x = 50;
+    for (int i = 1; i <= 4; i++)
+    {
+        if (i == selectedFeaturePage)
+        {
+            u8g2.drawDisc(x, 56, 2);
+        }
+        else
+        {
+            u8g2.drawCircle(x, 56, 2);
+        }
+        x += 9;
+    }
+    if (!nextButton && !isNextDebouncing && selectedFeaturePage != totalFeaturePages)
+    {
+        selectedFeaturePage++;
+    }
+    if (!prevButton && !isPrevDebouncing && selectedFeaturePage != 1)
+    {
+        selectedFeaturePage--;
+    }
     if (!digitalRead(selectButton) && !isSelectDebouncing)
     {
         displayPage = 1;
     }
+    nextDelay();
+    prevDelay();
     selectDelay();
     u8g2.sendBuffer();
 }
