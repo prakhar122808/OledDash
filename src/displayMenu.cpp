@@ -94,3 +94,14 @@ void display(int displayPage)
         break;
     }
 }
+
+void displayUp()
+{
+    u8g2.setFont(u8g2_font_cu12_t_symbols);
+    u8g2.drawGlyph(120, 12, 0x2191); // Up arrow
+}
+void displayDown()
+{
+    u8g2.setFont(u8g2_font_cu12_t_symbols);
+    u8g2.drawGlyph(120, 64, 0x2193); // Down arrow
+}
