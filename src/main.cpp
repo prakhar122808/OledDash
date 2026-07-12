@@ -21,8 +21,8 @@ void setup()
 
     u8g2.begin();
 
-    pinMode(upButton, INPUT_PULLUP);
-    // pinMode(downButton, INPUT_PULLUP);
+    pinMode(nextButton, INPUT_PULLUP);
+    pinMode(prevButton, INPUT_PULLUP);
     pinMode(selectButton, INPUT_PULLUP);
 }
 
