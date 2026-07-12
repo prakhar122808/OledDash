@@ -16,9 +16,10 @@ const char *mainMenu[] = {"Date and Time", "Weather"};
 const int numFeatures = sizeof(mainMenu) / sizeof(mainMenu[0]);
 
 // ------------Variables to track current selection and page------------
-int selection = 0;
+int selection = 1;
 int displayPage = 1;
-int selectedFeature = 0;
+int selectedFeaturePage = 1;
+int totalFeaturePages = 1;
 
 // ---------------------Variables related to weather---------------------
 Weather cachedWeather = {-1, -1, -1, " ", " "};
@@ -31,7 +32,12 @@ NonBlockingDelay selectDebounce(250);
 bool lastSelectState = HIGH;
 bool isSelectDebouncing = false;
 
-// Up button
-NonBlockingDelay upDebounce(500);
-bool lastUpState = HIGH;
-bool isUpDebouncing = false;
+// Next button
+NonBlockingDelay nextDebounce(500);
+bool lastNextState = HIGH;
+bool isNextDebouncing = false;
+
+// Prev button
+NonBlockingDelay prevDebounce(500);
+bool lastPrevState = HIGH;
+bool isPrevDebouncing = false;
