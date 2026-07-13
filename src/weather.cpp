@@ -62,7 +62,7 @@ Weather getWeather()
 }
 
 // ---------------------------------Page 1----------------------------------
-void currentTemperatures()
+void currentTemperature()
 {
     u8g2.clearBuffer();
     Weather weather = getWeather();
@@ -123,15 +123,16 @@ void currentTemperatures()
 
 void displayWeather()
 {
+    const char *features[] = {"currentTemperature"};
     selectedFeaturePage = 1;
-    totalFeaturePages = 1;
+    totalFeaturePages = sizeof(features) / sizeof(features[0]);
     // Plan to add option to use external hardware to get humidity and tempertaure
     // and defaulting to external API when external hardware isn't present
-    currentTemperatures();
+    currentTemperature();
 
     // Indicator showing selected page in app
-    int x = 50;
-    for (int i = 1; i <= 4; i++)
+    int x = 68 - (9 * totalFeaturePages / 2);
+    for (int i = 1; i <= totalFeaturePages; i++)
     {
         if (i == selectedFeaturePage)
         {
