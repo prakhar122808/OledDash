@@ -45,11 +45,20 @@ void currentTime()
     // Day and date
     u8g2.setFont(u8g2_font_t0_11b_tf);
     int dayWidth = u8g2.getStrWidth(day);
-    int dateWidth = u8g2.getStrWidth(date);
-    u8g2.setCursor((128 - dayWidth - dateWidth) / 2, positions[0]);
-    u8g2.print(day);
+
     u8g2.setFont(u8g2_font_profont12_tf);
-    u8g2.setCursor((128 + 2 * dayWidth - dateWidth) / 2, positions[0]);
+    int dateWidth = u8g2.getStrWidth(date);
+
+    int spaceWidth = 4;
+    int totalDateWidth = dayWidth + spaceWidth + dateWidth;
+    int startPos = (128 - totalDateWidth) / 2;
+
+    u8g2.setFont(u8g2_font_t0_11b_tf);
+    u8g2.setCursor(startPos, positions[0]);
+    u8g2.print(day);
+
+    u8g2.setFont(u8g2_font_profont12_tf);
+    u8g2.setCursor(startPos + dayWidth + spaceWidth, positions[0]);
     u8g2.print(date);
 
     // Time
@@ -61,14 +70,15 @@ void currentTime()
 
 void displayTime()
 {
+    const char *features[] = {"currentTime"};
     selectedFeaturePage = 1;
-    totalFeaturePages = 1;
+    totalFeaturePages = sizeof(features) / sizeof(features[0]);
     // Plan to add option to use external hardware to get time
     // and defaulting to NTP when external hardware isn't present
     currentTime();
     // Indicator showing selected page in app
-    int x = 50;
-    for (int i = 1; i <= 4; i++)
+    int x = 68 - (9 * totalFeaturePages / 2);
+    for (int i = 1; i <= totalFeaturePages; i++)
     {
         if (i == selectedFeaturePage)
         {
