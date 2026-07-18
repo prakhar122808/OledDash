@@ -41,3 +41,10 @@ bool isNextDebouncing = false;
 NonBlockingDelay prevDebounce(250);
 bool lastPrevState = HIGH;
 bool isPrevDebouncing = false;
+
+// ---------------------Variables related to LittleFS---------------------
+
+String rootCA, deviceCert, privateKey;
+
+// Configure secure client
+WiFiClientSecure net;
