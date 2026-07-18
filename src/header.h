@@ -1,6 +1,10 @@
 #pragma once
 #include <Arduino.h>
 #include <U8g2lib.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+
+#include "LittleFS.h"
 
 #include "credentials.h"
 #include "nonBlockingDelay.h"
@@ -49,15 +53,25 @@ extern Weather cachedWeather;
 extern unsigned long lastFetchTime;
 extern const unsigned long fetchInterval;
 
+// ---------------------------NonBlockingDelays---------------------------
+
 extern NonBlockingDelay selectDebounce;
 extern bool lastSelectState;
 extern bool isSelectDebouncing;
+
 extern NonBlockingDelay nextDebounce;
 extern bool lastNextState;
 extern bool isNextDebouncing;
+
 extern NonBlockingDelay prevDebounce;
 extern bool lastPrevState;
 extern bool isPrevDebouncing;
+
+// ---------------------Variables related to LittleFS---------------------
+extern String rootCA, deviceCert, privateKey;
+
+// Configure secure client
+extern WiFiClientSecure net;
 
 // -------------------------Function declarations-------------------------
 // Displays
@@ -78,3 +92,10 @@ void prevDelay();
 // Helper functions
 Weather getWeather();
 DateAndTime getDateAndTime();
+
+// LittleFS and WiFi functions
+void startLittleFS();
+void loadCerts();
+
+void startWifi();
+void setupTLS();
