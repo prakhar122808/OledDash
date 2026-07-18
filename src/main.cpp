@@ -1,5 +1,4 @@
 #include <time.h>
-#include <WiFi.h>
 
 #include "header.h"
 
@@ -9,13 +8,15 @@ void setup()
     Serial.begin(115200);
 
     // Connect to WiFi
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print(".");
-    }
-    Serial.println("Connected.");
+    startWifi();
+
+    // Set up LittleFS
+    startLittleFS();
+
+    // Load certificates
+    loadCerts();
+    // Set up Transport Layer Security
+    setupTLS();
 
     configTime(gmtOffset, daylightOffset, ntpServer);
 
