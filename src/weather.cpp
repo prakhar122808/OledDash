@@ -1,4 +1,3 @@
-#include <ArduinoJson.h>
 #include <cstring>
 #include <HTTPClient.h>
 
@@ -160,4 +159,16 @@ void displayWeather()
     prevDelay();
     selectDelay();
     u8g2.sendBuffer();
+}
+
+float getActualTemp()
+{
+    Weather weather = getWeather();
+    return weather.actualTemp;
+}
+
+float getFeelsLikeTemp()
+{
+    Weather weather = getWeather();
+    return weather.feelsLikeTemp;
 }

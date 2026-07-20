@@ -11,10 +11,3 @@ void startWifi()
     }
     Serial.println("Connected.");
 }
-
-void setupTLS()
-{
-    net.setCACert(rootCA.c_str());
-    net.setCertificate(deviceCert.c_str());
-    net.setPrivateKey(privateKey.c_str());
-}

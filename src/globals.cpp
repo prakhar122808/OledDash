@@ -26,6 +26,10 @@ Weather cachedWeather = {-1, -1, -1, " ", " "};
 unsigned long lastFetchTime = 0;
 const unsigned long fetchInterval = 60000; // 1 minute
 
+// ----------------------MQTT publishing variables----------------------
+unsigned long lastPublish = 0;
+const unsigned long PUBLISH_INTERVAL = fetchInterval;
+
 // ---------------------------NonBlockingDelays---------------------------
 // Select button
 NonBlockingDelay selectDebounce(250);
@@ -42,9 +46,8 @@ NonBlockingDelay prevDebounce(250);
 bool lastPrevState = HIGH;
 bool isPrevDebouncing = false;
 
-// ---------------------Variables related to LittleFS---------------------
-
-String rootCA, deviceCert, privateKey;
-
 // Configure secure client
-WiFiClientSecure net;
+WiFiClient net;
+
+// MQTT
+PubSubClient client(net);

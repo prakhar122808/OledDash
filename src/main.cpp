@@ -2,6 +2,19 @@
 
 #include "header.h"
 
+void waitForTime()
+{
+    time_t now = time(nullptr);
+    Serial.print("Waiting for NTP sync");
+    while (now < 1700000000)
+    { // sanity threshold, any time after ~Nov 2023
+        delay(500);
+        Serial.print(".");
+        now = time(nullptr);
+    }
+    Serial.println("\nTime synced: " + String(now));
+}
+
 void setup()
 {
 
@@ -10,16 +23,8 @@ void setup()
     // Connect to WiFi
     startWifi();
 
-    // Set up LittleFS
-    startLittleFS();
-
-    // Load certificates
-    loadCerts();
-    // Set up Transport Layer Security
-    setupTLS();
-
     configTime(gmtOffset, daylightOffset, ntpServer);
-
+    waitForTime();
     u8g2.begin();
 
     pinMode(nextButton, INPUT_PULLUP);
@@ -29,7 +34,17 @@ void setup()
 
 void loop()
 {
-
+    if (!client.connected())
+    {
+        connectAWS();
+    }
+    client.loop();
+    unsigned long now = millis();
+    if (now - lastPublish >= PUBLISH_INTERVAL)
+    {
+        lastPublish = now;
+        publishData(getActualTemp(), getFeelsLikeTemp());
+    }
     display(displayPage);
     delay(100);
 }

@@ -1,10 +1,10 @@
 #pragma once
 #include <Arduino.h>
+#include <ArduinoJson.h>
+#include <PubSubClient.h>
 #include <U8g2lib.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
-
-#include "LittleFS.h"
 
 #include "credentials.h"
 #include "nonBlockingDelay.h"
@@ -18,6 +18,7 @@ extern U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2;
 
 extern const char *ssid;
 extern const char *password;
+
 extern const char *ntpServer;
 extern const long gmtOffset;
 extern const long daylightOffset;
@@ -30,6 +31,9 @@ extern int selection;
 extern int displayPage;
 extern int selectedFeaturePage;
 extern int totalFeaturePages;
+
+extern unsigned long lastPublish;
+extern const unsigned long PUBLISH_INTERVAL;
 
 // ------------------Variables related to date and time------------------
 struct DateAndTime
@@ -67,11 +71,11 @@ extern NonBlockingDelay prevDebounce;
 extern bool lastPrevState;
 extern bool isPrevDebouncing;
 
-// ---------------------Variables related to LittleFS---------------------
-extern String rootCA, deviceCert, privateKey;
-
 // Configure secure client
-extern WiFiClientSecure net;
+extern WiFiClient net;
+
+// MQTT
+extern PubSubClient client;
 
 // -------------------------Function declarations-------------------------
 // Displays
@@ -84,6 +88,9 @@ void displayTime();
 // Display related to weather
 void displayWeather();
 
+float getActualTemp();
+float getFeelsLikeTemp();
+
 // Custom delays
 void selectDelay();
 void nextDelay();
@@ -93,9 +100,9 @@ void prevDelay();
 Weather getWeather();
 DateAndTime getDateAndTime();
 
-// LittleFS and WiFi functions
-void startLittleFS();
-void loadCerts();
-
+// WiFi
 void startWifi();
-void setupTLS();
+
+// MQTT
+void connectAWS();
+void publishData(float actualTemp, float feelsLikeTemp);
