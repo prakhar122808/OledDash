@@ -1,6 +1,7 @@
 package com.esp32_mqtt_connection;
 
 import org.eclipse.paho.client.mqttv3.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -21,8 +22,10 @@ import java.util.HashMap;
 public class MqttConfig {
 
     String clientId = "testID";
-    String topic = "esp32/pub";
-    String url = "tcp://192.168.31.101:1883";
+    @Value("${topic}")
+    String topic;
+    @Value("${url}")
+    String url;
     double lastActualTemp = 0;
     double lastFeelsLikeTemp = 0;
     @Bean

@@ -34,6 +34,6 @@ build/
 
 esp32pub-tcp192168311011883/
 testID-tcp192168311011883/
-src/main/resources/application.properties
+application-secrets.properties
 src/main/.DS_Store
 src/test
