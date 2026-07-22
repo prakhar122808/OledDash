@@ -16,8 +16,6 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessagingException;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.HashMap;
-
 @Configuration
 public class MqttConfig {
 
@@ -28,6 +26,7 @@ public class MqttConfig {
     String url;
     double lastActualTemp = 0;
     double lastFeelsLikeTemp = 0;
+
     @Bean
     public MqttPahoClientFactory mqttClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
@@ -47,7 +46,8 @@ public class MqttConfig {
 
     @Bean
     public MessageProducer inbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(clientId, mqttClientFactory(), topic);
+        MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(clientId,
+                mqttClientFactory(), topic);
         adapter.setCompletionTimeout(5000);
         adapter.setQos(1);
         adapter.setOutputChannel(mqttInputChannel());
@@ -72,4 +72,3 @@ public class MqttConfig {
         };
     }
 }
-
