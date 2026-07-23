@@ -42,7 +42,7 @@ struct DateAndTime
     char date[11]; // eg. 01/11/2025
     char time[9];  // eg. 23:09:38
 };
-
+extern unsigned long startTime;
 // ---------------------Variables related to weather---------------------
 struct Weather
 {

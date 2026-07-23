@@ -21,6 +21,9 @@ int displayPage = 1;
 int selectedFeaturePage = 1;
 int totalFeaturePages = 1;
 
+// ----------------------Variables related to time----------------------
+unsigned long startTime = millis();
+
 // ---------------------Variables related to weather---------------------
 Weather cachedWeather = {-1, -1, -1, " ", " "};
 unsigned long lastFetchTime = 0;

@@ -3,16 +3,25 @@
 #include "header.h"
 
 DateAndTime getDateAndTime();
+void displayTimeFeature(int selectedFeaturePage);
 void currentTime();
+void stopwatch();
+
+unsigned long stopwatchTime;
+unsigned long elapsedTime = 0;
+short timeCounter;
+short seconds;
+short minutes;
+short hours;
+bool isStopwatchRunning = false;
 
 void displayTime()
 {
-    const char *features[] = {"currentTime"};
-    selectedFeaturePage = 1;
+    const char *features[] = {"currentTime", "stopwatch"};
     totalFeaturePages = sizeof(features) / sizeof(features[0]);
     // Plan to add option to use external hardware to get time
     // and defaulting to NTP when external hardware isn't present
-    currentTime();
+    displayTimeFeature(selectedFeaturePage);
     // Indicator showing selected page in app
     int x = 68 - (9 * totalFeaturePages / 2);
     for (int i = 1; i <= totalFeaturePages; i++)
@@ -27,20 +36,21 @@ void displayTime()
         }
         x += 9;
     }
-    if (!nextButton && !isNextDebouncing && selectedFeaturePage != totalFeaturePages)
+    if (!digitalRead(nextButton) && !isNextDebouncing && selectedFeaturePage != totalFeaturePages)
     {
         selectedFeaturePage++;
     }
-    if (!prevButton && !isPrevDebouncing && selectedFeaturePage != 1)
-    {
-        selectedFeaturePage--;
-    }
+    // if (!digitalRead(prevButton) && !isPrevDebouncing && selectedFeaturePage != 1)
+    // {
+    //     selectedFeaturePage--;
+    // }
     if (!digitalRead(selectButton) && !isSelectDebouncing)
     {
         displayPage = 1;
     }
+
     nextDelay();
-    prevDelay();
+    // prevDelay();
     selectDelay();
     u8g2.sendBuffer();
 }
@@ -81,6 +91,44 @@ void currentTime()
     u8g2.print(time);
 }
 
+// ---------------------------------Page 2----------------------------------
+void stopwatch()
+{
+    u8g2.clearBuffer();
+    if (!digitalRead(prevButton) && !isPrevDebouncing)
+    {
+        if (!isStopwatchRunning)
+        {
+            startTime = millis();
+            isStopwatchRunning = true;
+        }
+        else
+        {
+            elapsedTime += millis() - startTime;
+            isStopwatchRunning = false;
+        }
+    }
+    if (isStopwatchRunning)
+    {
+        stopwatchTime = elapsedTime + (millis() - startTime);
+    }
+    else
+    {
+        stopwatchTime = elapsedTime;
+    }
+    timeCounter = stopwatchTime / 1000;
+    seconds = timeCounter % 60;
+    minutes = (timeCounter / 60) % 60;
+    hours = timeCounter / 3600;
+
+    char timeBuffer[10];
+    snprintf(timeBuffer, sizeof(timeBuffer), "%02d:%02d:%02d", hours, minutes, seconds);
+    u8g2.setFont(u8g2_font_fub17_tn);
+    u8g2.setCursor(16, 32);
+    prevDelay();
+    u8g2.print(timeBuffer);
+}
+
 DateAndTime getDateAndTime()
 {
 
@@ -109,4 +157,17 @@ DateAndTime getDateAndTime()
     std::snprintf(dateAndTime.date, sizeof(dateAndTime.date), "%s", date);
     std::snprintf(dateAndTime.time, sizeof(dateAndTime.time), "%s", time);
     return dateAndTime;
+}
+
+void displayTimeFeature(int selectedFeaturePage)
+{
+    switch (selectedFeaturePage)
+    {
+    case 1:
+        currentTime();
+        break;
+    case 2:
+        stopwatch();
+        break;
+    }
 }

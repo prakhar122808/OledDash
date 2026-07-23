@@ -2,19 +2,6 @@
 
 #include "header.h"
 
-void waitForTime()
-{
-    time_t now = time(nullptr);
-    Serial.print("Waiting for NTP sync");
-    while (now < 1700000000)
-    { // sanity threshold, any time after ~Nov 2023
-        delay(500);
-        Serial.print(".");
-        now = time(nullptr);
-    }
-    Serial.println("\nTime synced: " + String(now));
-}
-
 void setup()
 {
 
@@ -24,7 +11,6 @@ void setup()
     startWifi();
 
     configTime(gmtOffset, daylightOffset, ntpServer);
-    waitForTime();
     u8g2.begin();
 
     pinMode(nextButton, INPUT_PULLUP);
@@ -39,10 +25,9 @@ void loop()
         connectAWS();
     }
     client.loop();
-    unsigned long now = millis();
-    if (now - lastPublish >= PUBLISH_INTERVAL)
+    if (startTime - lastPublish >= PUBLISH_INTERVAL)
     {
-        lastPublish = now;
+        lastPublish = startTime;
         publishData(getActualTemp(), getFeelsLikeTemp());
     }
     display(displayPage);
